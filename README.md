@@ -59,6 +59,62 @@ In order to ensure that the Laravel community is welcoming to all, please review
 
 ## Security Vulnerabilities
 
+Langkah Cepat
+
+Clone repo: git clone https://github.com/YosepAlvin/poliklinik-uas.git
+Masuk folder: cd poliklinik-uas
+Install PHP deps: composer install
+Salin env: copy .env.example .env (Windows) atau cp .env.example .env (Mac/Linux)
+Set .env:
+APP_URL=http://127.0.0.1:8000
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=poliklinik
+DB_USERNAME=root
+DB_PASSWORD= (isi sesuai database Anda)
+Generate key: php artisan key:generate
+Migrasi + seed: php artisan migrate --seed
+Install frontend deps: npm install
+Jalankan Vite: npm run dev (tetap berjalan)
+Jalankan server Laravel: php artisan serve --host 127.0.0.1 --port 8000
+Buka aplikasi: http://127.0.0.1:8000
+Konfigurasi Database
+
+Buat database poliklinik di MariaDB:
+SQL: CREATE DATABASE poliklinik CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+Pastikan service MariaDB aktif sebelum php artisan migrate --seed.
+Akun Login (Seeded)
+
+Admin: admin@example.com / admin123
+Dokter: dokter@example.com / dokter123
+Pasien: pasien@example.com / pasien123
+Sumber kredensial:
+database/seeders/DatabaseSeeder.php:22
+database/seeders/DatabaseSeeder.php:23
+database/seeders/DatabaseSeeder.php:27
+database/seeders/DatabaseSeeder.php:28
+database/seeders/DatabaseSeeder.php:32
+database/seeders/DatabaseSeeder.php:33
+Perintah Harian
+
+Mulai backend: php artisan serve --host 127.0.0.1 --port 8000
+Mulai frontend (Vite): npm run dev
+Jalankan migrasi saat skema berubah: php artisan migrate
+Reset data (hati-hati, hapus data): php artisan migrate:fresh --seed
+Troubleshooting
+
+Gagal koneksi DB:
+Cek .env sesuai kredensial MariaDB
+Tes akses: mysql -h 127.0.0.1 -u root -p
+Aset frontend tidak tampil:
+Pastikan npm run dev aktif
+Cek APP_URL di .env sesuai http://127.0.0.1:8000
+Error saat migrate:
+Jalankan php artisan config:clear dan php artisan cache:clear
+Coba php artisan migrate:fresh --seed jika perlu reset
+
+
 If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
 ## License
