@@ -7,11 +7,15 @@
     <div class="card-body">
         <div class="row">
             <div class="col-md-6">
+                <div><strong>No RM:</strong> <code class="fw-bold">{{ $daftar->pasien->no_rm ?? '-' }}</code></div>
                 <div><strong>Nama Pasien:</strong> {{ $daftar->pasien->nama ?? '-' }}</div>
-                <div><strong>Keluhan:</strong> {{ $daftar->keluhan }}</div>
-                <div><strong>No Antrian:</strong> {{ $daftar->no_antrian }}</div>
+                <div><strong>Jenis Kelamin:</strong> {{ $daftar->pasien->jenis_kelamin == 'L' ? 'Laki-laki' : ($daftar->pasien->jenis_kelamin == 'P' ? 'Perempuan' : '-') }}</div>
+                <div><strong>Umur:</strong> {{ $daftar->pasien->umur }}</div>
+                <div><strong>Alamat:</strong> {{ $daftar->pasien->alamat ?? '-' }}</div>
             </div>
             <div class="col-md-6">
+                <div><strong>Keluhan:</strong> {{ $daftar->keluhan }}</div>
+                <div><strong>No Antrian:</strong> {{ $daftar->no_antrian }}</div>
                 <div><strong>Jadwal:</strong> {{ $daftar->jadwalPeriksa->hari ?? '' }} {{ $daftar->jadwalPeriksa ? $daftar->jadwalPeriksa->jam_mulai.' - '.$daftar->jadwalPeriksa->jam_selesai : '' }}</div>
             </div>
         </div>
@@ -94,37 +98,71 @@
         list.innerHTML = '';
         let totalObat = 0;
         selected.forEach((item, idx) => {
-            totalObat += item.harga;
+            const subtotal = item.harga * item.jumlah;
+            totalObat += subtotal;
+            
             const li = document.createElement('li');
-            li.className = 'list-group-item d-flex justify-content-between align-items-center';
-            li.innerHTML = `${item.nama} <span class="badge bg-primary rounded-pill">${formatRupiah(item.harga)}</span>`;
-            const removeBtn = document.createElement('button');
-            removeBtn.type = 'button';
-            removeBtn.className = 'btn btn-sm btn-outline-danger';
-            removeBtn.textContent = 'Hapus';
-            removeBtn.addEventListener('click', () => {
-                selected.splice(idx, 1);
-                render();
-            });
-            li.appendChild(removeBtn);
+            li.className = 'list-group-item d-flex flex-column mb-2 border rounded';
+            li.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="fw-bold">${item.nama}</span>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeObat(${idx})">Hapus</button>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="input-group input-group-sm" style="width: 150px;">
+                        <span class="input-group-text">Jml</span>
+                        <input type="number" class="form-control" value="${item.jumlah}" min="1" max="${item.stok}" onchange="updateJumlah(${idx}, this.value)">
+                    </div>
+                    <span class="text-primary fw-bold">${formatRupiah(subtotal)}</span>
+                </div>
+                <small class="text-muted mt-1">Harga Satuan: ${formatRupiah(item.harga)} | Tersedia: ${item.stok}</small>
+            `;
             list.appendChild(li);
         });
         totalObatEl.textContent = formatRupiah(totalObat);
         totalBayarEl.textContent = formatRupiah(totalObat + adminFee);
-        hiddenJson.value = JSON.stringify(selected.map(s => ({id: s.id})));
+        hiddenJson.value = JSON.stringify(selected.map(s => ({id: s.id, jumlah: s.jumlah})));
     }
+
+    window.removeObat = function(idx) {
+        selected.splice(idx, 1);
+        render();
+    };
+
+    window.updateJumlah = function(idx, val) {
+        const jumlah = parseInt(val);
+        if (isNaN(jumlah) || jumlah < 1) {
+            selected[idx].jumlah = 1;
+        } else if (jumlah > selected[idx].stok) {
+            alert('Stok obat tidak mencukupi (Tersedia: ' + selected[idx].stok + ')');
+            selected[idx].jumlah = selected[idx].stok;
+        } else {
+            selected[idx].jumlah = jumlah;
+        }
+        render();
+    };
 
     addBtn.addEventListener('click', () => {
         const id = parseInt(select.value);
         if (!id) return;
-        const price = parseInt(select.selectedOptions[0].dataset.price);
-        const name = select.selectedOptions[0].textContent;
-        const stock = parseInt(select.selectedOptions[0].dataset.stock);
+
+        // Cek jika obat sudah ada di list
+        if (selected.find(s => s.id === id)) {
+            alert('Obat sudah ada dalam daftar. Silakan ubah jumlahnya.');
+            return;
+        }
+
+        const option = select.selectedOptions[0];
+        const price = parseInt(option.dataset.price);
+        const name = option.text.split('(')[0].trim();
+        const stock = parseInt(option.dataset.stock);
+
         if (stock <= 0) {
             alert('Stok obat habis');
             return;
         }
-        selected.push({id, harga: price, nama: name});
+
+        selected.push({id, harga: price, nama: name, stok: stock, jumlah: 1});
         render();
         select.value = '';
     });

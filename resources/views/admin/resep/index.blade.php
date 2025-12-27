@@ -12,17 +12,22 @@
         <?php if($items->count() === 0){ ?>
             <tr><td colspan="5" class="text-center">Belum ada resep.</td></tr>
         <?php } else { foreach($items as $p){ ?>
-            <?php $total = $p->detailPeriksas->sum('harga'); ?>
             <tr>
                 <td>{{ $p->tgl_periksa ? $p->tgl_periksa->format('d/m/Y H:i') : '-' }}</td>
                 <td>{{ $p->daftarPoli->pasien->nama ?? '-' }}</td>
                 <td>{{ $p->daftarPoli->jadwalPeriksa->dokter->name ?? '-' }}</td>
                 <td>
                     <?php foreach($p->detailPeriksas as $d){ ?>
-                        <span class="badge bg-primary me-1">{{ $d->obat->nama_obat ?? '-' }}</span>
+                        <div class="mb-1">
+                            <span class="badge bg-primary">{{ $d->obat->nama_obat ?? '-' }}</span>
+                            <small class="text-muted">{{ $d->jumlah }} x Rp{{ number_format($d->harga_saat_periksa,0,',','.') }}</small>
+                        </div>
                     <?php } ?>
                 </td>
-                <td>Rp{{ number_format($total,0,',','.') }}</td>
+                <td>
+                    <div class="fw-bold text-primary">Rp{{ number_format($p->biaya,0,',','.') }}</div>
+                    <small class="text-muted" style="font-size: 0.75rem;">(Inc. Admin)</small>
+                </td>
             </tr>
         <?php } } ?>
         </tbody>

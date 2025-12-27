@@ -31,7 +31,7 @@ Route::get('/dashboard', function () {
 })->middleware('auth')->name('dashboard');
 
 Route::middleware(['auth', 'role:dokter'])->prefix('dokter')->name('dokter.')->group(function () {
-    Route::view('/dashboard', 'dokter.dashboard')->name('dashboard');
+    Route::get('/dashboard', [\App\Http\Controllers\Dokter\DashboardController::class, 'index'])->name('dashboard');
     Route::resource('jadwal', \App\Http\Controllers\Dokter\JadwalPeriksaController::class)->except(['show']);
     Route::get('/resep', [\App\Http\Controllers\Dokter\ResepController::class, 'index'])->name('resep.index');
     Route::get('/periksa-pasien', [\App\Http\Controllers\Dokter\PeriksaPasienController::class, 'index'])->name('periksa.index');
@@ -39,6 +39,8 @@ Route::middleware(['auth', 'role:dokter'])->prefix('dokter')->name('dokter.')->g
     Route::post('/periksa-pasien', [\App\Http\Controllers\Dokter\PeriksaPasienController::class, 'store'])->name('periksa.store');
     Route::get('/riwayat-pasien', [\App\Http\Controllers\Dokter\RiwayatPasienController::class, 'index'])->name('riwayat.index');
     Route::get('/riwayat-pasien/{id}', [\App\Http\Controllers\Dokter\RiwayatPasienController::class, 'show'])->name('riwayat.show');
+    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'index'])->name('profile');
+    Route::post('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
 });
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -46,9 +48,17 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('obat', \App\Http\Controllers\Admin\ObatController::class);
     Route::resource('dokter', \App\Http\Controllers\Admin\DokterController::class);
     Route::resource('pasien', \App\Http\Controllers\Admin\PasienController::class);
+    Route::get('pasien/{pasien}/riwayat', [\App\Http\Controllers\Admin\PasienController::class, 'riwayat'])->name('pasien.riwayat');
     Route::resource('poli', \App\Http\Controllers\Admin\PoliController::class);
-    Route::get('/resep', [\App\Http\Controllers\Admin\ResepController::class, 'index'])->name('resep.index');
+    Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
+    Route::post('/users/{user}/reset-password', [\App\Http\Controllers\Admin\UserController::class, 'resetPassword'])->name('users.reset-password');
+    Route::resource('resep', \App\Http\Controllers\Admin\ResepController::class);
     Route::get('/jadwal', [\App\Http\Controllers\Admin\JadwalController::class, 'index'])->name('jadwal.index');
+    
+    // Pendaftaran Pasien (Baru)
+    Route::get('/pendaftaran', [\App\Http\Controllers\Admin\PendaftaranPasienController::class, 'index'])->name('pendaftaran.index');
+    Route::post('/pendaftaran', [\App\Http\Controllers\Admin\PendaftaranPasienController::class, 'store'])->name('pendaftaran.store');
+    Route::get('/pendaftaran/get-dokter/{poliId}', [\App\Http\Controllers\Admin\PendaftaranPasienController::class, 'getDokterByPoli']);
 });
 
 Route::middleware(['auth', 'role:pasien'])->prefix('pasien')->name('pasien.')->group(function () {
@@ -60,4 +70,6 @@ Route::middleware(['auth', 'role:pasien'])->prefix('pasien')->name('pasien.')->g
     Route::get('/riwayat', [\App\Http\Controllers\Pasien\RiwayatController::class, 'index'])->name('riwayat.index');
     Route::get('/riwayat/{id}', [\App\Http\Controllers\Pasien\RiwayatController::class, 'show'])->name('riwayat.show');
     Route::view('/periksa', 'pasien.periksa.index')->name('periksa.index');
+    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'index'])->name('profile');
+    Route::post('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
 });

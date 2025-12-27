@@ -17,11 +17,12 @@ class PeriksaPasienController extends Controller
     {
         $dokterId = Auth::id();
 
-        $daftars = DaftarPoli::with(['pasien', 'jadwalPeriksa'])
+        $daftars = DaftarPoli::with(['pasien', 'jadwalPeriksa.poli'])
             ->whereHas('jadwalPeriksa', function ($q) use ($dokterId) {
                 $q->where('dokter_id', $dokterId);
             })
-            ->whereDoesntHave('periksa')
+            ->where('status', '!=', 'selesai')
+            ->orderBy('jadwal_periksa_id')
             ->orderBy('no_antrian')
             ->get();
 
@@ -47,7 +48,7 @@ class PeriksaPasienController extends Controller
         $validated = $request->validate([
             'daftar_poli_id' => ['required', 'integer', 'exists:daftar_poli,id'],
             'catatan' => ['required', 'string'],
-            'obat_json' => ['required', 'string'],
+            'obat_json' => ['required', 'string'], // format: [{"id": 1, "jumlah": 2}, ...]
         ]);
 
         $dokterId = Auth::id();
@@ -59,50 +60,66 @@ class PeriksaPasienController extends Controller
             ->findOrFail($validated['daftar_poli_id']);
 
         $items = json_decode($validated['obat_json'], true) ?: [];
-        $ids = collect($items)->map(function ($item) {
-            if (is_array($item) && array_key_exists('id', $item)) {
-                return (int) $item['id'];
+        
+        // Membangun map id => jumlah untuk memudahkan akses
+        $obatMap = [];
+        foreach ($items as $item) {
+            $id = is_array($item) ? ($item['id'] ?? null) : $item;
+            $jumlah = is_array($item) ? ($item['jumlah'] ?? 1) : 1;
+            if ($id) {
+                $obatMap[$id] = ($obatMap[$id] ?? 0) + $jumlah;
             }
-            return (int) $item;
-        })->filter()->values();
+        }
 
-        $obats = collect();
-        $totalObat = 0;
+        $ids = array_keys($obatMap);
         $biayaAdmin = 150000;
-        $total = 0;
+        $notifPesan = [];
 
         try {
-        DB::transaction(function () use ($daftar, $validated, &$obats, &$totalObat, $biayaAdmin, &$total, $ids) {
-            $obats = Obat::whereIn('id', $ids)->lockForUpdate()->get();
-            // Validasi stok
-            foreach ($obats as $obat) {
-                if (($obat->stok ?? 0) <= 0) {
-                    throw new \RuntimeException("Stok obat {$obat->nama_obat} habis");
+            DB::transaction(function () use ($daftar, $validated, $obatMap, $ids, $biayaAdmin, &$notifPesan) {
+                $obats = Obat::whereIn('id', $ids)->lockForUpdate()->get();
+                $totalObat = 0;
+
+                // Validasi stok dan hitung total
+                foreach ($obats as $obat) {
+                    $jumlahDiminta = $obatMap[$obat->id];
+                    
+                    if ($obat->stok < $jumlahDiminta) {
+                        throw new \RuntimeException("Stok obat {$obat->nama_obat} tidak mencukupi (Tersedia: {$obat->stok})");
+                    }
+                    
+                    $totalObat += ($obat->harga * $jumlahDiminta);
                 }
-            }
-            $totalObat = $obats->sum('harga');
-            $total = $totalObat + $biayaAdmin;
 
-            $periksa = Periksa::create([
-                'daftar_poli_id' => $daftar->id,
-                'tgl_periksa' => now(),
-                'catatan' => $validated['catatan'],
-                'biaya' => $total,
-            ]);
-
-            foreach ($obats as $obat) {
-                DetailPeriksa::create([
-                    'periksa_id' => $periksa->id,
-                    'obat_id' => $obat->id,
-                    'harga' => $obat->harga,
+                $periksa = Periksa::create([
+                    'daftar_poli_id' => $daftar->id,
+                    'tgl_periksa' => now(),
+                    'catatan' => $validated['catatan'],
+                    'biaya' => $totalObat + $biayaAdmin,
                 ]);
-                $obat->decrement('stok', 1);
-            }
-        });
+
+                // Update status di daftar_poli
+                $daftar->update(['status' => 'selesai']);
+
+                foreach ($obats as $obat) {
+                    $jumlahDiminta = $obatMap[$obat->id];
+                    
+                    DetailPeriksa::create([
+                        'periksa_id' => $periksa->id,
+                        'obat_id' => $obat->id,
+                        'jumlah' => $jumlahDiminta,
+                        'harga_saat_periksa' => $obat->harga,
+                    ]);
+
+                    $obat->decrement('stok', $jumlahDiminta);
+                    $notifPesan[] = "{$obat->nama_obat} berkurang {$jumlahDiminta} stok";
+                }
+            });
         } catch (\RuntimeException $e) {
             return back()->withErrors(['obat' => $e->getMessage()])->withInput();
         }
 
-        return redirect()->route('dokter.periksa.index')->with('success', 'Pemeriksaan berhasil disimpan');
+        $successMessage = 'Pemeriksaan berhasil disimpan. ' . implode(', ', $notifPesan);
+        return redirect()->route('dokter.periksa.index')->with('success', $successMessage);
     }
 }

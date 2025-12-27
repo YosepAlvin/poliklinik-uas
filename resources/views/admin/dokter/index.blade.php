@@ -10,15 +10,29 @@
 @if(session('success'))<div class="alert alert-success">{{ session('success') }}</div>@endif
 <div class="table-responsive">
     <table class="table table-striped">
-        <thead><tr><th>Nama</th><th>Email</th><th style="width:160px">Aksi</th></tr></thead>
+        <thead>
+            <tr>
+                <th>Nama</th>
+                <th>Email</th>
+                <th>Poli</th>
+                <th>Jenis Kelamin</th>
+                <th>Tanggal Lahir</th>
+                <th>Alamat</th>
+                <th style="width:160px">Aksi</th>
+            </tr>
+        </thead>
         <tbody>
         @if($items->count() === 0)
-            <tr><td colspan="3" class="text-center">Belum ada data.</td></tr>
+            <tr><td colspan="7" class="text-center">Belum ada data.</td></tr>
         @else
             @foreach($items as $d)
             <tr>
                 <td>{{ $d->name }}</td>
                 <td>{{ $d->email }}</td>
+                <td>{{ $d->poli->nama_poli ?? '-' }}</td>
+                <td>{{ $d->jenis_kelamin == 'L' ? 'Laki-laki' : ($d->jenis_kelamin == 'P' ? 'Perempuan' : '-') }}</td>
+                <td>{{ $d->tgl_lahir ? $d->tgl_lahir->format('d/m/Y') : '-' }}</td>
+                <td>{{ $d->alamat ?? '-' }}</td>
                 <td>
                     <a class="btn btn-sm btn-warning" href="{{ route('admin.dokter.edit', $d) }}">Edit</a>
                     <form action="{{ route('admin.dokter.destroy', $d) }}" method="POST" class="d-inline">

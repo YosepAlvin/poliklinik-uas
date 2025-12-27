@@ -29,20 +29,22 @@
         <h6 class="card-title">Daftar Obat</h6>
         <div class="table-responsive">
             <table class="table">
-                <thead><tr><th>Obat</th><th>Harga</th></tr></thead>
+                <thead><tr><th>Obat</th><th>Harga</th><th>Jml</th><th>Subtotal</th></tr></thead>
                 <tbody>
                 <?php if($periksa->detailPeriksas->count() === 0){ ?>
-                    <tr><td colspan="2" class="text-center">Tidak ada obat.</td></tr>
+                    <tr><td colspan="4" class="text-center">Tidak ada obat.</td></tr>
                 <?php } else { foreach($periksa->detailPeriksas as $d){ ?>
                     <tr>
                         <td>{{ $d->obat->nama_obat ?? '-' }}</td>
-                        <td>Rp{{ number_format($d->harga,0,',','.') }}</td>
+                        <td>Rp{{ number_format($d->harga_saat_periksa,0,',','.') }}</td>
+                        <td>{{ $d->jumlah }}</td>
+                        <td>Rp{{ number_format($d->harga_saat_periksa * $d->jumlah,0,',','.') }}</td>
                     </tr>
                 <?php } } ?>
                 </tbody>
                 <tfoot>
                 <tr>
-                    <th>Total Biaya</th>
+                    <th colspan="3" class="text-end">Biaya Periksa (Termasuk Admin)</th>
                     <th>Rp{{ number_format($periksa->biaya,0,',','.') }}</th>
                 </tr>
                 </tfoot>

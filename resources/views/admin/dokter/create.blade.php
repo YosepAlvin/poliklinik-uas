@@ -26,6 +26,48 @@
             <input type="password" name="password" class="form-control" required>
             @error('password')<div class="text-danger small">{{ $message }}</div>@enderror
         </div>
+        <div class="mb-3">
+            <label class="form-label">Poli</label>
+            <select name="poli_id" class="form-select" required>
+                <option value="">-- Pilih Poli --</option>
+                @foreach($polis as $p)
+                    <option value="{{ $p->id }}" {{ old('poli_id') == $p->id ? 'selected' : '' }}>{{ $p->nama_poli }}</option>
+                @endforeach
+            </select>
+            @error('poli_id')<div class="text-danger small">{{ $message }}</div>@enderror
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Jenis Kelamin</label>
+            <select name="jenis_kelamin" class="form-select">
+                <option value="">-- Pilih Jenis Kelamin --</option>
+                <option value="L" {{ old('jenis_kelamin') == 'L' ? 'selected' : '' }}>Laki-laki</option>
+                <option value="P" {{ old('jenis_kelamin') == 'P' ? 'selected' : '' }}>Perempuan</option>
+            </select>
+            @error('jenis_kelamin')<div class="text-danger small">{{ $message }}</div>@enderror
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Tanggal Lahir</label>
+            <input type="date" name="tgl_lahir" class="form-control" value="{{ old('tgl_lahir') }}">
+            @error('tgl_lahir')<div class="text-danger small">{{ $message }}</div>@enderror
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Dokter Jaga?</label>
+            <select name="is_jaga" class="form-select">
+                <option value="0" {{ old('is_jaga') == '0' ? 'selected' : '' }}>Tidak</option>
+                <option value="1" {{ old('is_jaga') == '1' ? 'selected' : '' }}>Ya</option>
+            </select>
+            @error('is_jaga')<div class="text-danger small">{{ $message }}</div>@enderror
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Nomor HP</label>
+            <input type="text" name="no_hp" class="form-control" value="{{ old('no_hp') }}">
+            @error('no_hp')<div class="text-danger small">{{ $message }}</div>@enderror
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Alamat</label>
+            <textarea name="alamat" class="form-control" rows="3">{{ old('alamat') }}</textarea>
+            @error('alamat')<div class="text-danger small">{{ $message }}</div>@enderror
+        </div>
         <button class="btn btn-success">Simpan</button>
         <a href="{{ route('admin.dokter.index') }}" class="btn btn-secondary">Kembali</a>
     </form>

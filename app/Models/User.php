@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
@@ -23,6 +24,16 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'avatar',
+        'status',
+        'alamat',
+        'no_hp',
+        'poli_id',
+        'is_jaga',
+        'jenis_kelamin',
+        'tgl_lahir',
+        'spesialisasi',
+        'unit',
     ];
 
     /**
@@ -45,11 +56,22 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'tgl_lahir' => 'date',
         ];
+    }
+
+    public function poli(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Poli::class, 'poli_id');
     }
 
     public function jadwalPeriksas(): HasMany
     {
         return $this->hasMany(JadwalPeriksa::class, 'dokter_id');
+    }
+
+    public function pasien(): HasOne
+    {
+        return $this->hasOne(Pasien::class, 'user_id');
     }
 }

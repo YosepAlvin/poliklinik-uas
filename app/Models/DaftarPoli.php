@@ -13,8 +13,14 @@ class DaftarPoli extends Model
     protected $fillable = [
         'pasien_id',
         'jadwal_periksa_id',
+        'tanggal_periksa',
         'keluhan',
         'no_antrian',
+        'status',
+    ];
+
+    protected $casts = [
+        'tanggal_periksa' => 'date',
     ];
 
     public function pasien(): BelongsTo

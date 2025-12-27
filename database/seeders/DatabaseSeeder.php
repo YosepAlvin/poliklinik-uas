@@ -20,17 +20,17 @@ class DatabaseSeeder extends Seeder
     {
         $admin = User::updateOrCreate(
             ['email' => 'admin@example.com'],
-            ['name' => 'Admin', 'password' => Hash::make('admin123'), 'role' => 'admin']
+            ['name' => 'Admin', 'password' => 'admin123', 'role' => 'admin']
         );
 
         $dokter = User::updateOrCreate(
             ['email' => 'dokter@example.com'],
-            ['name' => 'Dr. Budi', 'password' => Hash::make('dokter123'), 'role' => 'dokter']
+            ['name' => 'Dr. Budi', 'password' => 'dokter123', 'role' => 'dokter']
         );
 
         $pasienUser = User::updateOrCreate(
             ['email' => 'pasien@example.com'],
-            ['name' => 'Andi Pasien', 'password' => Hash::make('pasien123'), 'role' => 'pasien']
+            ['name' => 'Andi Pasien', 'password' => 'pasien123', 'role' => 'pasien']
         );
 
         $pasien = Pasien::updateOrCreate(

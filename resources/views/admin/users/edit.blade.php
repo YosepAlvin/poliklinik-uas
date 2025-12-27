@@ -1,0 +1,170 @@
+@extends('layouts.admin')
+
+@section('content')
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Edit User: {{ $user->name }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ route('admin.users.index') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Kembali
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form action="{{ route('admin.users.update', $user->id) }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
+                    
+                    <div class="row mb-3 text-center">
+                        <div class="col-12">
+                            <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=0D8ABC&color=fff' }}" 
+                                 alt="Avatar" class="rounded-circle mb-2" style="width: 100px; height: 100px; object-fit: cover;">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">Nama Lengkap</label>
+                            <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $user->name) }}" required>
+                            @error('name')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email / Username</label>
+                            <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', $user->email) }}" required>
+                            @error('email')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="role" class="form-label">Role</label>
+                            <select class="form-select @error('role') is-invalid @enderror" id="role" name="role" required onchange="togglePoli(this.value)">
+                                <option value="admin" {{ old('role', $user->role) === 'admin' ? 'selected' : '' }}>Admin</option>
+                                <option value="dokter" {{ old('role', $user->role) === 'dokter' ? 'selected' : '' }}>Dokter</option>
+                                <option value="pasien" {{ old('role', $user->role) === 'pasien' ? 'selected' : '' }}>Pasien</option>
+                            </select>
+                            @error('role')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-6" id="poli-container" style="display: {{ old('role', $user->role) === 'dokter' ? 'block' : 'none' }};">
+                            <label for="poli_id" class="form-label">Poli (Khusus Dokter)</label>
+                            <select class="form-select @error('poli_id') is-invalid @enderror" id="poli_id" name="poli_id">
+                                <option value="">Pilih Poli</option>
+                                @foreach($polis as $poli)
+                                    <option value="{{ $poli->id }}" {{ old('poli_id', $user->poli_id) == $poli->id ? 'selected' : '' }}>{{ $poli->nama_poli }}</option>
+                                @endforeach
+                            </select>
+                            @error('poli_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-6" id="jaga-container" style="display: {{ old('role', $user->role) === 'dokter' ? 'block' : 'none' }};">
+                            <label for="is_jaga" class="form-label">Dokter Jaga?</label>
+                            <select class="form-select @error('is_jaga') is-invalid @enderror" id="is_jaga" name="is_jaga">
+                                <option value="0" {{ old('is_jaga', $user->is_jaga) == '0' ? 'selected' : '' }}>Tidak</option>
+                                <option value="1" {{ old('is_jaga', $user->is_jaga) == '1' ? 'selected' : '' }}>Ya</option>
+                            </select>
+                            @error('is_jaga')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-6" id="status-container">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select @error('status') is-invalid @enderror" id="status" name="status" required>
+                                <option value="aktif" {{ old('status', $user->status) === 'aktif' ? 'selected' : '' }}>Aktif</option>
+                                <option value="nonaktif" {{ old('status', $user->status) === 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+                            </select>
+                            @error('status')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <script>
+                        function togglePoli(role) {
+                            const poliContainer = document.getElementById('poli-container');
+                            const jagaContainer = document.getElementById('jaga-container');
+                            const statusContainer = document.getElementById('status-container');
+                            if (role === 'dokter') {
+                                poliContainer.style.display = 'block';
+                                jagaContainer.style.display = 'block';
+                                statusContainer.classList.remove('col-md-6');
+                                statusContainer.classList.add('col-md-6'); 
+                            } else {
+                                poliContainer.style.display = 'none';
+                                jagaContainer.style.display = 'none';
+                                document.getElementById('poli_id').value = '';
+                                document.getElementById('is_jaga').value = '0';
+                            }
+                        }
+                        // Initialize on load
+                        document.addEventListener('DOMContentLoaded', function() {
+                            togglePoli(document.getElementById('role').value);
+                        });
+                    </script>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="no_hp" class="form-label">No. HP</label>
+                            <input type="text" class="form-control @error('no_hp') is-invalid @enderror" id="no_hp" name="no_hp" value="{{ old('no_hp', $user->no_hp) }}">
+                            @error('no_hp')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label for="jenis_kelamin" class="form-label">Jenis Kelamin</label>
+                            <select class="form-select @error('jenis_kelamin') is-invalid @enderror" id="jenis_kelamin" name="jenis_kelamin">
+                                <option value="" {{ is_null($user->jenis_kelamin) ? 'selected' : '' }} disabled>Pilih Jenis Kelamin</option>
+                                <option value="L" {{ old('jenis_kelamin', $user->jenis_kelamin) === 'L' ? 'selected' : '' }}>Laki-laki</option>
+                                <option value="P" {{ old('jenis_kelamin', $user->jenis_kelamin) === 'P' ? 'selected' : '' }}>Perempuan</option>
+                            </select>
+                            @error('jenis_kelamin')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="tgl_lahir" class="form-label">Tanggal Lahir</label>
+                            <input type="date" class="form-control @error('tgl_lahir') is-invalid @enderror" id="tgl_lahir" name="tgl_lahir" value="{{ old('tgl_lahir', $user->tgl_lahir ? $user->tgl_lahir->format('Y-m-d') : '') }}">
+                            @error('tgl_lahir')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="alamat" class="form-label">Alamat Lengkap</label>
+                        <textarea class="form-control @error('alamat') is-invalid @enderror" id="alamat" name="alamat" rows="2">{{ old('alamat', $user->alamat) }}</textarea>
+                        @error('alamat')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="avatar" class="form-label">Ganti Avatar (JPG/PNG, max 2MB)</label>
+                        <input type="file" class="form-control @error('avatar') is-invalid @enderror" id="avatar" name="avatar" accept="image/jpeg,image/png">
+                        @error('avatar')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <small class="text-muted">Kosongkan jika tidak ingin mengubah avatar.</small>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection

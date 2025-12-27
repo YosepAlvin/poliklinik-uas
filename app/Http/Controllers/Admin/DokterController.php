@@ -11,13 +11,14 @@ class DokterController extends Controller
 {
     public function index()
     {
-        $items = User::where('role', 'dokter')->orderBy('name')->paginate(20);
+        $items = User::with('poli')->where('role', 'dokter')->orderBy('name')->paginate(20);
         return view('admin.dokter.index', compact('items'));
     }
 
     public function create()
     {
-        return view('admin.dokter.create');
+        $polis = \App\Models\Poli::all();
+        return view('admin.dokter.create', compact('polis'));
     }
 
     public function store(Request $request)
@@ -26,8 +27,13 @@ class DokterController extends Controller
             'name' => ['required', 'string'],
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'string', 'min:6'],
+            'poli_id' => ['required', 'exists:poli,id'],
+            'no_hp' => ['nullable', 'string', 'max:20'],
+            'alamat' => ['nullable', 'string'],
+            'jenis_kelamin' => ['nullable', 'in:L,P'],
+            'tgl_lahir' => ['nullable', 'date'],
+            'is_jaga' => ['nullable', 'boolean'],
         ]);
-        $data['password'] = Hash::make($data['password']);
         $data['role'] = 'dokter';
         User::create($data);
         return redirect()->route('admin.dokter.index')->with('success', 'Dokter dibuat');
@@ -35,7 +41,8 @@ class DokterController extends Controller
 
     public function edit(User $dokter)
     {
-        return view('admin.dokter.edit', compact('dokter'));
+        $polis = \App\Models\Poli::all();
+        return view('admin.dokter.edit', compact('dokter', 'polis'));
     }
 
     public function update(Request $request, User $dokter)
@@ -44,10 +51,14 @@ class DokterController extends Controller
             'name' => ['required', 'string'],
             'email' => ['required', 'email', 'unique:users,email,'.$dokter->id],
             'password' => ['nullable', 'string', 'min:6'],
+            'poli_id' => ['required', 'exists:poli,id'],
+            'no_hp' => ['nullable', 'string', 'max:20'],
+            'alamat' => ['nullable', 'string'],
+            'jenis_kelamin' => ['nullable', 'in:L,P'],
+            'tgl_lahir' => ['nullable', 'date'],
+            'is_jaga' => ['nullable', 'boolean'],
         ]);
-        if (!empty($data['password'])) {
-            $data['password'] = Hash::make($data['password']);
-        } else {
+        if (empty($data['password'])) {
             unset($data['password']);
         }
         $dokter->update($data);

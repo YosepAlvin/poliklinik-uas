@@ -11,16 +11,23 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">Pasien</a>
-        <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link {{ request()->routeIs('pasien.dashboard') ? 'active' : '' }}" href="{{ route('pasien.dashboard') }}">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link {{ request()->routeIs('pasien.periksa.*') ? 'active' : '' }}" href="{{ route('pasien.periksa.index') }}">Periksa</a></li>
-            <li class="nav-item"><a class="nav-link {{ request()->routeIs('pasien.riwayat.*') ? 'active' : '' }}" href="{{ route('pasien.riwayat.index') }}">Riwayat</a></li>
-            <li class="nav-item"><a class="nav-link {{ request()->routeIs('pasien.resep.*') ? 'active' : '' }}" href="{{ route('pasien.resep.index') }}">Resep</a></li>
-            <li class="nav-item"><a class="nav-link {{ request()->routeIs('pasien.pendaftaran.*') ? 'active' : '' }}" href="{{ route('pasien.pendaftaran.index') }}">Jadwal</a></li>
-            <li class="nav-item">
-                <form method="POST" action="{{ route('logout') }}" class="ms-2">@csrf
-                    <button class="btn btn-outline-light btn-sm">Logout</button>
-                </form>
+        <ul class="navbar-nav ms-auto align-items-center">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="{{ Auth::user()->avatar ? asset('storage/' . Auth::user()->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode(Auth::user()->name) . '&background=0D8ABC&color=fff' }}" alt="Avatar" class="rounded-circle me-2" style="width: 30px; height: 30px; object-fit: cover;">
+                    {{ Auth::user()->name }}
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                    <li><a class="dropdown-item" href="{{ route('pasien.profile') }}"><i class="bi bi-person"></i> Profile</a></li>
+                    <li><a class="dropdown-item" href="{{ route('pasien.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button class="dropdown-item text-danger" type="submit"><i class="bi bi-box-arrow-right"></i> Logout</button>
+                        </form>
+                    </li>
+                </ul>
             </li>
         </ul>
     </div>
@@ -67,5 +74,6 @@
         </main>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

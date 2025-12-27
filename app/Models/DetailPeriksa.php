@@ -12,7 +12,8 @@ class DetailPeriksa extends Model
     protected $fillable = [
         'periksa_id',
         'obat_id',
-        'harga',
+        'jumlah',
+        'harga_saat_periksa',
     ];
 
     public function periksa(): BelongsTo

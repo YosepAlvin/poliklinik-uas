@@ -10,7 +10,7 @@ class PasienController extends Controller
 {
     public function index()
     {
-        $items = Pasien::orderBy('nama')->paginate(20);
+        $items = Pasien::with('user')->orderBy('nama')->paginate(20);
         return view('admin.pasien.index', compact('items'));
     }
 
@@ -23,9 +23,22 @@ class PasienController extends Controller
     {
         $data = $request->validate([
             'nama' => ['required', 'string'],
+            'alamat' => ['nullable', 'string'],
+            'tgl_lahir' => ['nullable', 'date'],
+            'no_rm' => ['nullable', 'string', 'unique:pasien,no_rm'],
+            'jenis_kelamin' => ['nullable', 'in:L,P'],
         ]);
         Pasien::create($data);
         return redirect()->route('admin.pasien.index')->with('success', 'Pasien dibuat');
+    }
+
+    public function riwayat(Pasien $pasien)
+    {
+        $periksas = $pasien->periksas()
+            ->with(['daftarPoli.jadwalPeriksa.dokter', 'detailPeriksas.obat'])
+            ->orderByDesc('tgl_periksa')
+            ->paginate(10);
+        return view('admin.pasien.riwayat', compact('pasien', 'periksas'));
     }
 
     public function edit(Pasien $pasien)
@@ -37,6 +50,10 @@ class PasienController extends Controller
     {
         $data = $request->validate([
             'nama' => ['required', 'string'],
+            'alamat' => ['nullable', 'string'],
+            'tgl_lahir' => ['nullable', 'date'],
+            'no_rm' => ['nullable', 'string', "unique:pasien,no_rm,{$pasien->id}"],
+            'jenis_kelamin' => ['nullable', 'in:L,P'],
         ]);
         $pasien->update($data);
         return redirect()->route('admin.pasien.index')->with('success', 'Pasien diubah');

@@ -27,7 +27,7 @@ class AuthController extends Controller
         $user = \App\Models\User::create([
             'name' => $data['name'],
             'email' => $data['email'],
-            'password' => bcrypt($data['password']),
+            'password' => $data['password'], // Laravel 11 hashed cast handles this
             'role' => 'pasien',
         ]);
         \App\Models\Pasien::create([
