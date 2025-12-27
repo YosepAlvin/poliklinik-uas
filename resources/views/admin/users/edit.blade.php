@@ -54,7 +54,7 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        <div class="col-md-6" id="poli-container" style="display: {{ old('role', $user->role) === 'dokter' ? 'block' : 'none' }};">
+                        <div class="col-md-6 {{ old('role', $user->role) === 'dokter' ? '' : 'd-none' }}" id="poli-container">
                             <label for="poli_id" class="form-label">Poli (Khusus Dokter)</label>
                             <select class="form-select @error('poli_id') is-invalid @enderror" id="poli_id" name="poli_id">
                                 <option value="">Pilih Poli</option>
@@ -66,7 +66,7 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                        <div class="col-md-6" id="jaga-container" style="display: {{ old('role', $user->role) === 'dokter' ? 'block' : 'none' }};">
+                        <div class="col-md-6 {{ old('role', $user->role) === 'dokter' ? '' : 'd-none' }}" id="jaga-container">
                             <label for="is_jaga" class="form-label">Dokter Jaga?</label>
                             <select class="form-select @error('is_jaga') is-invalid @enderror" id="is_jaga" name="is_jaga">
                                 <option value="0" {{ old('is_jaga', $user->is_jaga) == '0' ? 'selected' : '' }}>Tidak</option>
@@ -92,15 +92,12 @@
                         function togglePoli(role) {
                             const poliContainer = document.getElementById('poli-container');
                             const jagaContainer = document.getElementById('jaga-container');
-                            const statusContainer = document.getElementById('status-container');
                             if (role === 'dokter') {
-                                poliContainer.style.display = 'block';
-                                jagaContainer.style.display = 'block';
-                                statusContainer.classList.remove('col-md-6');
-                                statusContainer.classList.add('col-md-6'); 
+                                poliContainer.classList.remove('d-none');
+                                jagaContainer.classList.remove('d-none');
                             } else {
-                                poliContainer.style.display = 'none';
-                                jagaContainer.style.display = 'none';
+                                poliContainer.classList.add('d-none');
+                                jagaContainer.classList.add('d-none');
                                 document.getElementById('poli_id').value = '';
                                 document.getElementById('is_jaga').value = '0';
                             }
